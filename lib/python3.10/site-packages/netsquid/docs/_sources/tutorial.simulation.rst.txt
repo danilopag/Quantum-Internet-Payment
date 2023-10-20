@@ -1,0 +1,128 @@
+A full simulation
+=================
+
+With the concepts of components, quantum programs on a quantum processor, and protocols explained we can now finalize and fine tune a complete teleportation protocol.
+
+The full example can be found in the ``netsquid/examples/teleportation.py`` module.
+You can find this file on your system using the following python commands:
+
+>>> import netsquid as ns
+...
+>>> print(f"Teleportation example module is located at: "
+...       f"{ns.examples.teleportation.__file__}")
+Teleportation example module is located at: .../netsquid/examples/teleportation.py
+
+We will highlight parts of this file here in this tutorial.
+
+.. raw:: html
+
+    <p class="topic-title">Learning goals</p>
+
+- Setup of a complete network using the network component
+  (**advanced**).
+- Setting up and running a simulation including data collection
+  (**essential**).
+
+.. contents:: Table of contents
+    :local:
+    :depth: 1
+
+*Advanced sections are denoted by an asterix (\*).*
+
+Setting up the complete network :sup:`*`
+----------------------------------------
+
+The first step towards running a simulation in NetSquid is to set up the physical network with all its components.
+In the `Nodes and Connections tutorial <tutorial.nodes.html>`_ we saw how to set up a network between Alice and Bob.
+We will use that network again here.
+The main difference is that we will now want the quantum operations to take time and be noisy.
+For this we need a quantum processor with physical instructions, instead of a quantum memory.
+
+The connections that we will use between the nodes of Alice and Bob are defined similarly to before:
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: EntanglingConnection
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: ClassicalConnection
+
+The nodes of Alice and Bob each use the same quantum processor:
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: create_processor
+
+The following funcion completes the network setup and returns the network:
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: example_network_setup
+
+Setting up the simulation
+-------------------------
+
+In a previous tutorial we saw how to create protocols and quantum programs.
+Here we will execute programs within a protocol.
+
+A quantum program is used instead of a protocol to create the state to be teleported:
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: InitStateProgram
+
+Also we will use a program to perform a Bell measurement:
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: BellMeasurementProgram
+
+We use these two programs in the protocol that runs on the node of Alice.
+
+There are a few differences with the protocol in the `Protocols tutorial <tutorial.protocols.html>`_.
+Instead of initializing it with another protocol, the Bell measurement protocol now creates the program to initialise a state.
+The program is executed, and the protocol yields until either the program is done or it has received the qubit from Charlie in its memory.
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: BellMeasurementProtocol
+
+On Bob's side the corrections should also be done with instructions.
+It is possible to execute single instructions instead of creating a new program for that.
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: CorrectionProtocol
+
+Running a simulation
+--------------------
+
+We are now ready for a simulation.
+You may have noticed that the protocols are adjusted slightly from the protocol tutorial section.
+The results are reset and a program executed after all event expressions were triggered.
+This is to setup the protocols for multiple runs.
+The quantum source at Charlie is triggered on a timer.
+Every time it triggers it causes Alice to teleport more qubits.
+
+Once Bob has received and corrected its qubit we want to compare it with the initial qubit Alice had created.
+This is done with a data collector (:obj:`~netsquid.util.datacollector.DataCollector`).
+The data collector listens to certain events and stores results about the simulation.
+Since it is intended to be used after a simulation a data collector can do actions that are normally not allowed,
+such as reading out the full state of qubits (even if they are stored on multiple nodes, breaking locality).
+
+The data collector fetches the qubit of Bob, measures the fidelity and discards the qubit.
+The fidelity is stored inside the data collector.
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: example_sim_setup
+
+We will measure the average fidelity of 1000 runs and run that experiment for different depolarisation rates.
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: run_experiment
+
+We make use of the matplotlib library to show the figure when running a full simulation.
+This library is not part of the requirements, so needs to be installed manually if you want to generate the plot.
+
+.. literalinclude:: ../netsquid/examples/teleportation.py
+    :pyobject: create_plot
+
+.. figure:: _static/teleportation_fidelity_plot.png
+
+
+We currently create the qubit to teleport the moment the protocol starts. This is inefficient because the qubit is then
+stored and decohering in Alices memory for a long time before entanglement is created between Alice and Bob. Can you
+optimize the protocol so as to minimize the time Alice her qubit is in her memory?

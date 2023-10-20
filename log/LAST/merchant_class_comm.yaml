@@ -1,0 +1,66 @@
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: WAIT_RECV
+  LOG: Waiting for a classical message from client...
+  MSG: null
+  REC: merchant
+  SEN: client
+  SOD: 0
+  WCT: '2023-10-17 21:04:08.835299'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: RECV
+  LOG: 'Message received from client: StructuredMessage(header=''InfoToken'', payload=[[1,
+    0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+    1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0,
+    1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0,
+    0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1], 10003400])'
+  MSG: 'InfoToken: [[1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,
+    1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1,
+    1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1,
+    0, 1, 1], 10003400]'
+  REC: merchant
+  SEN: client
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.708945'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: SEND
+  LOG: 'Send classical message to ttp: {"header": "InfoToken", "payload": [[1, 0,
+    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1,
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+    0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1,
+    1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0,
+    1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1], 10003400, "Esselunga"]}'
+  MSG: 'InfoToken: [[1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,
+    1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1,
+    1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1,
+    0, 1, 1], 10003400, ''Esselunga'']'
+  REC: ttp
+  SEN: merchant
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.709253'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: WAIT_RECV
+  LOG: Waiting for a classical message from ttp...
+  MSG: null
+  REC: merchant
+  SEN: ttp
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.709385'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: RECV
+  LOG: 'Message received from ttp: StructuredMessage(header=''OutcomeToken'', payload=[''Pagamento
+    approvato''])'
+  MSG: 'OutcomeToken: [''Pagamento approvato'']'
+  REC: merchant
+  SEN: ttp
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.875831'

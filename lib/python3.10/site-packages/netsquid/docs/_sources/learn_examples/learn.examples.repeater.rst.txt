@@ -1,0 +1,24 @@
+Repeater with purification
+==========================
+
+This example contains multiple quantum network protocols (:py:class:`~netsquid.protocols.protocol.Protocol`).
+The protocols build on each other: :py:mod:`~netsquid.examples.purify` depends on :py:mod:`~netsquid.examples.entanglenodes`,
+while :py:mod:`~netsquid.examples.repeater` depends on both.
+
+Entangle nodes protocol
+-----------------------
+
+.. automodule:: netsquid.examples.entanglenodes
+   :noindex:
+
+Purification protocols
+----------------------
+
+.. automodule:: netsquid.examples.purify
+   :noindex:
+
+Repeater protocol
+-----------------
+
+.. automodule:: netsquid.examples.repeater
+   :noindex:

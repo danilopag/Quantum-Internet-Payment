@@ -1,0 +1,7 @@
+netsquid\.qubits\.kettools
+--------------------------
+
+.. automodule:: netsquid.qubits.kettools
+    :members:
+    :show-inheritance:
+    :inherited-members:

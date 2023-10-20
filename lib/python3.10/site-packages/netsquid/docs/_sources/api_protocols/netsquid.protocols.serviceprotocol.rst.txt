@@ -1,0 +1,8 @@
+netsquid\.protocols\.serviceprotocol
+------------------------------------
+
+.. automodule:: netsquid.protocols.serviceprotocol
+    :members:
+    :show-inheritance:
+    :inherited-members:
+    :no-undoc-members:

@@ -1,0 +1,10 @@
+netsquid\.qubits\.opmath
+-------------------------
+
+.. attribute:: netsquid.qubits.operators.sparse_padding_threshold
+
+    *int* - number of qubits at (and above) which to pad operators as sparse rather than dense matrices.
+
+.. automodule:: netsquid.qubits.opmath
+    :members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+netsquid\.components\.qdetector
+-------------------------------
+
+.. automodule:: netsquid.components.qdetector
+    :members:
+    :show-inheritance:
+    :inherited-members:

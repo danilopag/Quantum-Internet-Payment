@@ -1,0 +1,6 @@
+netsquid\.util\.constrainedmap
+------------------------------
+
+.. automodule:: netsquid.util.constrainedmap
+    :members:
+    :show-inheritance:

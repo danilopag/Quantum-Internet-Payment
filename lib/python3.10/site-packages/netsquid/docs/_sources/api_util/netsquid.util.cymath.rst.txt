@@ -1,0 +1,6 @@
+netsquid\.util\.cymath
+----------------------
+
+.. automodule:: netsquid.util.cymath
+    :members:
+    :show-inheritance:

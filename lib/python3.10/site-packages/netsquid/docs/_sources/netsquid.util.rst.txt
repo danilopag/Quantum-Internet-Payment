@@ -1,0 +1,14 @@
+netsquid\.util
+==============
+
+.. toctree::
+    :caption: Modules
+    :maxdepth: 2
+
+    api_util/netsquid.util.simtools
+    api_util/netsquid.util.simlog
+    api_util/netsquid.util.simstats
+    api_util/netsquid.util.datacollector
+    api_util/netsquid.util.cycache
+    api_util/netsquid.util.cymath
+    api_util/netsquid.util.constrainedmap

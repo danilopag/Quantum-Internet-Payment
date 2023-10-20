@@ -1,0 +1,7 @@
+netsquid\.examples\.repeater_chain
+----------------------------------
+
+.. automodule:: netsquid.examples.repeater_chain
+    :members:
+    :show-inheritance:
+    :inherited-members:

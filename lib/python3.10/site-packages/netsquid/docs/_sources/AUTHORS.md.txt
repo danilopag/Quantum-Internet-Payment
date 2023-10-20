@@ -1,0 +1,34 @@
+NetSquid Authors
+================
+
+NetSquid is being developed within [Quantum Internet division](https://qutech.nl/research-engineering/quantum-internet/) at QuTech.
+QuTech is a collaboration between TNO and the TUDelft.
+
+Active authors (alphabetical):
+
+- Tim Coopmans (scientific contributor)
+- Chris Elenbaas (software developer)
+- David Elkouss (scientific supervisor)
+- Rob Knegjens (tech lead, software architect)
+- Iñaki Martin Soroa (software developer)
+- Julio de Oliveira Filho (software architect)
+- Ariana Torres Knoop (HPC contributor)
+- Stephanie Wehner (scientific supervisor)
+
+Past authors (alphabetical):
+
+- Axel Dahlberg (scientific contributor)
+- Damian Podareanu (HPC contributor)
+- Walter de Jong (HPC contributor)
+- Loek Nijsten (software developer)
+- Martijn Papendrecht (software developer)
+- Filip Rozpedek (scientific contributor)
+- Matt Skrzypczyk (software contributor)
+- Leon Wubben (software developer)
+
+The simulation engine of NetSquid depends on the pyDynAA package,
+which is developed at TNO by Julio de Oliveira Filho, Rob Knegjens, Coen van Leeuwen, and Joost Adriaanse.
+
+Ariana Torres Knoop, Walter de Jong and Damian Podareanu from SURFsara have contributed towards the optimization and parallelization of NetSquid.
+
+Hana Jirovska and Chris Elenbaas have built Python packages for MacOS.

@@ -1,0 +1,7 @@
+netsquid\.qubits\.cliffords
+--------------------------------
+
+.. automodule:: netsquid.qubits.cliffords
+    :members:
+    :show-inheritance:
+    :inherited-members:

@@ -1,0 +1,7 @@
+netsquid\.examples\.entanglenodes
+---------------------------------
+
+.. automodule:: netsquid.examples.entanglenodes
+    :members:
+    :show-inheritance:
+    :inherited-members:

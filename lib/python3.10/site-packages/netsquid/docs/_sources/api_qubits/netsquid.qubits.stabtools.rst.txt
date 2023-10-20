@@ -1,0 +1,7 @@
+netsquid\.qubits\.stabtools
+---------------------------
+
+.. automodule:: netsquid.qubits.stabtools
+    :members:
+    :show-inheritance:
+    :inherited-members:

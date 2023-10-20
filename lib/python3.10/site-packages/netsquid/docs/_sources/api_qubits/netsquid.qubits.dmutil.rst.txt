@@ -1,0 +1,7 @@
+netsquid\.qubits\.dmutil
+------------------------
+
+.. automodule:: netsquid.qubits.dmutil
+    :members:
+    :show-inheritance:
+    :inherited-members:

@@ -1,0 +1,348 @@
+Protocols
+=========
+
+Now that nodes (:py:class:`~netsquid.nodes.node.Node`) and connections (:py:class:`~netsquid.nodes.connections.Connection`)
+are set up, protocols (:py:class:`~netsquid.protocols.protocol.Protocol`) can be attached to the nodes.
+In contrast to components, which represent physical entities in a simulation (the **hardware**),
+protocols are *virtual simulation entities* that steer component behaviour (the **software**).
+For example, a protocol may instruct a quantum processor to measure one of its qubits upon receiving a classical message on one of its node's ports.
+In this section of the tutorial we show how to use protocols to teleport a qubit from Alice to Bob.
+
+.. raw:: html
+
+    <p class="topic-title">Learning goals</p>
+
+- Using protocols to manage components
+  (**essential**).
+- Using the yield statement to wait on event expressions
+  (**advanced**).
+
+.. contents:: Table of contents
+    :local:
+    :depth: 1
+
+*Advanced sections are denoted by an asterix (\*).*
+
+Protocol
+--------
+
+There are two ways to create protocols, either with callbacks as described in the `pydynaa tutorial <tutorial.pydynaa.html>`_
+or as a python generator.
+In this tutorial the second option will be explained; with a generator the asynchronous flow of a protocol is generally easier to follow.
+The main protocol methods are:
+
+* :py:meth:`~netsquid.protocols.protocol.Protocol.start`
+    starts the protocol and generally resets any state variables.
+* :py:meth:`~netsquid.protocols.protocol.Protocol.stop`
+    stops the protocol but should not modify any state variables.
+* :py:meth:`~netsquid.protocols.protocol.Protocol.reset`
+    stops and then restarts the protocol.
+* :py:meth:`~netsquid.protocols.protocol.Protocol.run`
+    Here the flow of the protocol can be defined.
+    Within the run() method you can ``yield`` on :py:obj:`~pydynaa.core.EventExpression`\s.
+    ``yield`` is used to create a `generator iterator <https://docs.python.org/3/glossary.html#term-generator-iterator>`_.
+    When executing such a generator function it runs until the first ``yield``, where it will be suspended.
+    The generator remembers where it was suspended,
+    so when resuming the generator it picks up where it left off, and runs until the next ``yield``.
+
+    We use this to create inline callbacks by yielding on an :py:obj:`~pydynaa.core.EventExpression`.
+    When the event expression triggers (usually at a later point in the simulation)
+    the protocol resumes and runs until the next ``yield`` or ``return``.
+
+A simple example protocol that sleeps for 100 nanoseconds:
+
+>>> from netsquid.protocols import Protocol
+...
+...
+>>> class WaitProtocol(Protocol):
+...     def run(self):
+...         print(f"Starting protocol at {ns.sim_time()}")
+...         yield self.await_timer(100)
+...         print(f"Ending protocol at {ns.sim_time()}")
+...
+>>> ns.sim_reset()
+>>> protocol = WaitProtocol()
+>>> protocol.start()
+Starting protocol at 0.0
+WaitProtocol('WaitProtocol')
+>>> stats = ns.sim_run()
+Ending protocol at 100.0
+
+When a protocol has finished it sends a ``FINISHED`` signal (:class:`~netsquid.protocols.protocol.Signals`) to inform any listening entities.
+Signals are events of a specific type and with an optional result.
+There are several other predefined signal types, notably ``SUCCESS`` and ``FAIL``.
+A protocol can send signals using the :meth:`~netsquid.protocols.protocol.Protocol.send_signal` method.
+
+The ping pong example using protocols
+-------------------------------------
+
+The earlier game of quantum ping pong can also be written as two protocols.
+Here instead of defining events and their callbacks, we can write a single generator for the whole sequence.
+
+>>> from netsquid.protocols import NodeProtocol
+>>> from netsquid.components import QuantumChannel
+>>> from netsquid.nodes import Node, DirectConnection
+>>> from netsquid.qubits import qubitapi as qapi
+...
+...
+>>> class PingProtocol(NodeProtocol):
+...     def run(self):
+...         print(f"Starting ping at t={ns.sim_time()}")
+...         port = self.node.ports["port_to_channel"]
+...         qubit, = qapi.create_qubits(1)
+...         port.tx_output(qubit)  # Send qubit to Pong
+...         while True:
+...             # Wait for qubit to be received back
+...             yield self.await_port_input(port)
+...             qubit = port.rx_input().items[0]
+...             m, prob = qapi.measure(qubit, ns.Z)
+...             labels_z =  ("|0>", "|1>")
+...             print(f"{ns.sim_time()}: Pong event! {self.node.name} measured "
+...                   f"{labels_z[m]} with probability {prob:.2f}")
+...             port.tx_output(qubit)  # Send qubit to B
+...
+...
+>>> class PongProtocol(NodeProtocol):
+...     def run(self):
+...         print("Starting pong at t={}".format(ns.sim_time()))
+...         port = self.node.ports["port_to_channel"]
+...         while True:
+...             yield self.await_port_input(port)
+...             qubit = port.rx_input().items[0]
+...             m, prob = qapi.measure(qubit, ns.X)
+...             labels_x = ("|+>", "|->")
+...             print(f"{ns.sim_time()}: Ping event! {self.node.name} measured "
+...                   f"{labels_x[m]} with probability {prob:.2f}")
+...             port.tx_output(qubit)  # send qubit to Ping
+
+We can run these two protocols on the nodes of our Ping and Pong entity.
+We connect them with a direct connection and assign them their protocol.
+
+>>> ns.sim_reset()
+>>> ns.set_random_state(seed=42)
+>>> node_ping = Node("Ping", port_names=["port_to_channel"])
+>>> node_pong = Node("Pong", port_names=["port_to_channel"])
+>>> connection = DirectConnection("Connection",
+...                               QuantumChannel("Channel_LR", delay=10),
+...                               QuantumChannel("Channel_RL", delay=10))
+>>> node_ping.ports["port_to_channel"].connect(connection.ports["A"])
+>>> node_pong.ports["port_to_channel"].connect(connection.ports["B"])
+>>> ping_protocol = PingProtocol(node_ping)
+>>> pong_protocol = PongProtocol(node_pong)
+
+This is already the full setup we need, and now we can run the simulation.
+
+>>> ping_protocol.start()
+Starting ping at t=0.0
+PingProtocol(Node(name='Ping'), 'PingProtocol')
+>>> pong_protocol.start()
+Starting pong at t=0.0
+PongProtocol(Node(name='Pong'), 'PongProtocol')
+>>> stats = ns.sim_run(91)
+10.0: Ping event! Pong measured |+> with probability 0.50
+20.0: Pong event! Ping measured |1> with probability 0.50
+30.0: Ping event! Pong measured |-> with probability 0.50
+40.0: Pong event! Ping measured |1> with probability 0.50
+50.0: Ping event! Pong measured |+> with probability 0.50
+60.0: Pong event! Ping measured |0> with probability 0.50
+70.0: Ping event! Pong measured |+> with probability 0.50
+80.0: Pong event! Ping measured |1> with probability 0.50
+90.0: Ping event! Pong measured |-> with probability 0.50
+
+Note that these protocols never end; an end time has to be specified in `sim_run()`.
+In this case we specified 91 nanoseconds.
+
+What happens if the protocols are stopped or reset?
+
+>>> pong_protocol.stop()
+>>> stats = ns.sim_run()  # doctest: +SKIP
+100.0: Pong event! Ping measured |1> with probability 0.50
+
+.. doctest::
+    :hide:
+
+    >>> stats = ns.sim_run()
+    100.0: Pong event! Ping measured |1> with probability 0.50
+
+Now that the pong protocol is stopped the simulation can be run until there are no more events.
+In the previous run, pong sent a qubit back to ping, but it was not yet processed. In this run, the lingering qubit arrived at the ping protocol.
+The qubit is pinged back, but pong is stopped so does not process it. There was no one listening to the port, so now the qubit is lost.
+When pong is started again, nothing will happen, since there is no qubit to pass back and forth.
+
+
+>>> pong_protocol.start()
+Starting pong at t=110.0
+PongProtocol(Node(name='Pong'), 'PongProtocol')
+>>> stats = ns.sim_run()
+
+The ping protocol has to be reset to create a new qubit.
+
+>>> ping_protocol.reset()
+Starting ping at t=110.0
+>>> stats = ns.sim_run(duration=51)
+120.0: Ping event! Pong measured |+> with probability 0.50
+130.0: Pong event! Ping measured |1> with probability 0.50
+140.0: Ping event! Pong measured |-> with probability 0.50
+150.0: Pong event! Ping measured |0> with probability 0.50
+160.0: Ping event! Pong measured |+> with probability 0.50
+
+The teleportation example using protocols :sup:`*`
+--------------------------------------------------
+
+We are now ready to set up our teleportation example using protocols.
+Alice will have a protocol to create the qubit state that she wants to teleport.
+For now this protocol does not need to yield on anything, it will just create a random state.
+When the qubit is created the protocol signals to the world that it succeeded and on which memory position the qubit is located.
+
+You may think that Alice could simply send a signal with the measurement results, to which Bob could listen to.
+However that would break locality; the message would have been sent faster than light to Bob!
+To avoid this possibility a node protocol (:py:class:`~netsquid.protocols.nodeprotocols.NodeProtocol`) can be used.
+Such a protocol has access to only one node, and also ensures protocols can only signal to other protocols on that node i.e. at the same location.
+If a protocol should have access to a limited set of nodes a local protocol (:py:class:`~netsquid.protocols.nodeprotocols.LocalProtocol`) can be used, or a regular protocol (:py:class:`~netsquid.protocols.nodeprotocols.LocalProtocol`) if locality is not of concern.
+
+>>> from netsquid.protocols import NodeProtocol, Signals
+...
+>>> class InitStateProtocol(NodeProtocol):
+...     def run(self):
+...         qubit, = qapi.create_qubits(1)
+...         mem_pos = self.node.qmemory.unused_positions[0]
+...         self.node.qmemory.put(qubit, mem_pos)
+...         self.node.qmemory.operate(ns.H, mem_pos)
+...         self.node.qmemory.operate(ns.S, mem_pos)
+...         self.send_signal(signal_label=Signals.SUCCESS, result=mem_pos)
+
+Next Alice needs a protocol to perform her Bell measurement.
+Before she can do the measurement both the qubit
+she wants to teleport and the qubit that is entangled with Bob needs to be in her memory,
+so Alice needs to wait for both of them.
+In principle they can arrive in any order, so Alice will need to wait for both of them simultaneously.
+This can be done by combining the event expressions with the ``&`` (AND) operator, which waits until both expressions are triggered:
+
+>>> expression_and = yield expression1 & expression2  # doctest: +SKIP
+
+Alternatively, the ``|`` (OR) operator waits until one expression is triggered:
+
+>>> expression_or = yield expression3 | expression4  # doctest: +SKIP
+
+The event expression that is returned is a copy of the event expression that was yielded on.
+This new copied event expression has information on which expression was triggered.
+
+>>> expression_or.first_term.value  # Is true if expression3 was triggered  # doctest: +SKIP
+>>> expression_or.second_term.value  # Is true if expression4 was triggered  # doctest: +SKIP
+>>> # list of all events that caused the expression to trigger:
+>>> expression_or.triggered_events    # doctest: +SKIP
+
+Alice waits for a signal of the InitStateProtocol (i.e. her qubit being prepared), and until the entangled qubit gets placed on the
+memory. Once both have occurred she can do the measurement and send the measurement results to Bob.
+
+>>> from pydynaa import EventExpression
+...
+>>> class BellMeasurementProtocol(NodeProtocol):
+...     def __init__(self, node, qubit_protocol):
+...         super().__init__(node)
+...         self.add_subprotocol(qubit_protocol, 'qprotocol')
+...
+...     def run(self):
+...         qubit_initialised = False
+...         entanglement_ready = False
+...         while True:
+...             evexpr_signal = self.await_signal(
+...                 sender=self.subprotocols['qprotocol'],
+...                 signal_label=Signals.SUCCESS)
+...             evexpr_port = self.await_port_input(self.node.ports["qin_charlie"])
+...             expression = yield evexpr_signal | evexpr_port
+...             if expression.first_term.value:
+...                  # First expression was triggered 
+...                 qubit_initialised = True
+...             else:
+...                 # Second expression was triggered
+...                 entanglement_ready = True
+...             if qubit_initialised and entanglement_ready:
+...                 # Perform Bell measurement:
+...                 self.node.qmemory.operate(ns.CNOT, [0, 1])
+...                 self.node.qmemory.operate(ns.H, 0)
+...                 m, _ = self.node.qmemory.measure([0, 1])
+...                 # Send measurement results to Bob:
+...                 self.node.ports["cout_bob"].tx_output(m)
+...                 self.send_signal(Signals.SUCCESS)
+...                 print(f"{ns.sim_time():.1f}: Alice received entangled qubit, "
+...                       f"measured qubits & sending corrections")
+...                 break
+...
+...     def start(self):
+...         super().start()
+...         self.start_subprotocols()
+
+Bob needs to perform corrections on the qubit it received from the source. So Bob also needs to wait for two things to
+occur; the classical data he receives from Alice, and the entangled qubit that gets placed in Bob's memory.
+
+>>> class CorrectionProtocol(NodeProtocol):
+...
+...     def __init__(self, node):
+...         super().__init__(node)
+...
+...     def run(self):
+...         port_alice = self.node.ports["cin_alice"]
+...         port_charlie = self.node.ports["qin_charlie"]
+...         entanglement_ready = False
+...         meas_results = None
+...         while True:
+...             evexpr_port_a = self.await_port_input(port_alice)
+...             evexpr_port_c = self.await_port_input(port_charlie)
+...             expression = yield evexpr_port_a | evexpr_port_c
+...             if expression.first_term.value:
+...                 meas_results = port_alice.rx_input().items
+...             else:
+...                 entanglement_ready = True
+...             if meas_results is not None and entanglement_ready:
+...                 if meas_results[0]:
+...                     self.node.qmemory.operate(ns.Z, 0)
+...                 if meas_results[1]:
+...                     self.node.qmemory.operate(ns.X, 0)
+...                 self.send_signal(Signals.SUCCESS, 0)
+...                 fidelity = ns.qubits.fidelity(self.node.qmemory.peek(0)[0],
+...                                               ns.y0, squared=True)
+...                 print(f"{ns.sim_time():.1f}: Bob received entangled qubit and "
+...                       f"corrections! Fidelity = {fidelity:.3f}")
+...                 break
+
+To finish we build the example network from the previous tutorial, assign the protocols and run the simulation.
+The `example_network_setup` now returns `network` instead of the nodes and connections.
+This is a convenient class (:py:obj:`~netsquid.nodes.node.network.Network`) that can hold all nodes and connections of
+a network.
+
+>>> from netsquid.examples.teleportation import example_network_setup
+>>> ns.sim_reset()
+>>> ns.set_qstate_formalism(ns.QFormalism.DM)
+>>> ns.set_random_state(seed=42)
+>>> network = example_network_setup()
+>>> alice = network.get_node("Alice")
+>>> bob = network.get_node("Bob")
+>>> random_state_protocol = InitStateProtocol(alice)
+>>> bell_measure_protocol = BellMeasurementProtocol(alice, random_state_protocol)
+>>> correction_protocol = CorrectionProtocol(bob)
+>>> bell_measure_protocol.start()
+>>> correction_protocol.start()
+>>> stats = ns.sim_run(100)
+10.0: Alice received entangled qubit, measured qubits & sending corrections
+30.0: Bob received entangled qubit and corrections! Fidelity = 0.870
+
+Our fidelity dropped from the previous 0.909 to 0.870 due to our prepared qubit now having to wait idly in the quantum memory before for the entangled qubit to arrive before we perform the bell measurement.
+
+
+See also
+^^^^^^^^
+
+Helper methods of the protocol base class:
+
+* :py:meth:`~netsquid.protocols.protocol.Protocol.await_timer` - Starts a timer and returns an EventExpression that trigger after the set amount
+* :py:meth:`~netsquid.protocols.protocol.Protocol.await_signal` - Wait for an other protocol to signal something. LocalProtocols and NodeProtocols can only receive signals from local protocols
+* :py:meth:`~netsquid.protocols.protocol.Protocol.await_port_input` - Wait until a message arrives at a port input
+* :py:meth:`~netsquid.protocols.protocol.Protocol.await_port_output` - Wait until a message arrives at a port output
+
+What is next?
+^^^^^^^^^^^^^
+
+In the next tutorial we will introduce the quantum processor, which gives us more options for qubit manipulation.
+Instead of perfect and instanteous operations it can handle physical instructions.
+Afterwards we will run the teleportation protocol multiple times and gather and plot some data.

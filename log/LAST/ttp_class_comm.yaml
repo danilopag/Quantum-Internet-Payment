@@ -1,0 +1,39 @@
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: WAIT_RECV
+  LOG: Waiting for a classical message from merchant...
+  MSG: null
+  REC: ttp
+  SEN: merchant
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.646730'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: RECV
+  LOG: 'Message received from merchant: StructuredMessage(header=''InfoToken'', payload=[[1,
+    0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+    1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+    1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0,
+    1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0,
+    0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1], 10003400,
+    ''Esselunga''])'
+  MSG: 'InfoToken: [[1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,
+    1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1,
+    1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1,
+    1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1,
+    0, 1, 1], 10003400, ''Esselunga'']'
+  REC: ttp
+  SEN: merchant
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.765072'
+- HFL: /home/danilopag/Scrivania/bb84/env/lib/python3.10/site-packages/netqasm/util/log.py
+  HLN: 67
+  INS: SEND
+  LOG: 'Send classical message to merchant: {"header": "OutcomeToken", "payload":
+    ["Pagamento approvato"]}'
+  MSG: 'OutcomeToken: [''Pagamento approvato'']'
+  REC: merchant
+  SEN: ttp
+  SOD: 0
+  WCT: '2023-10-17 21:04:57.772108'

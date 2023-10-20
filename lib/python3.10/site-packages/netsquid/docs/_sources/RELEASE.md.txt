@@ -1,0 +1,547 @@
+RELEASE NOTES
+=============
+
+This file lists any important changes made by NetSquid releases and patches from a user perspective.
+For incremental changes to the source repository see the [CHANGELOG](CHANGELOG.md).
+
+For details concerning new features please refer to the [online documentation](https://docs.netsquid.org/).
+
+Release 1.1
+-----------
+
+#### New features
+
+- Added the `Switch` component interface and the `SimpleSwitch`, a component subclassing from it. Switches facilitate users to forward classical and quantum messages between prespecified input and output ports based on user defined custom logic, such as a routing table.
+- Added positional output ports to the `QuantumMemory` that optionally allow each memory position to emit (pop) qubits via their own dedicated port.
+- Added a `QuantumMemory.discard` method to clear a qubit from a `MemoryPosition` without having to pop (emit) it, and added the corresponding instruction `IDiscard`.
+- Changed the properties container of a `Model` from a dict to a `ConstrainedMap`, and added the `add_property()` method.
+- The `ConstrainedMap` now allows directly assigning unknown keys, and the type of a value can now be constrained to be a union of multiple types.
+- Added the option to give a single observable as input to `gmeasure` instead of a list of measurement operators. The projectors of the observable are then used as the list of operators.
+- Multi-qubit pauli measurements are now possible for the stabiliser (`STAB`) formalism using the `gmeasure` interface with an observable.
+
+#### Improvements
+
+- The `projectors` attribute of `Operator` class only returns a projector for each non-degenerate eigenvalue.
+- Improved memory and time performance of calculating the fidelity using the `SparseDM` formalism.
+- The `QuantumDetector` has been made easier to subclass by removing internal control logic out of the `measure()` and `finish()` methods.
+- Improved the documentation of the _simlog_ module describing how logging and loggers work in NetSquid, including concrete examples.
+
+Release 1.0
+------------
+
+As the first major version of NetSquid, we have given extra attention in this release to streamlining the public interfaces and fixing inconsistencies. Below we list the most important new features, changes, and deprecations.
+
+Note that all code that was deprecated prior to version 0.10 has been removed in this version.
+
+#### Quantum states and representations
+
+- The way quantum states of qubits are represented by the `QState` (quantum state) object has changed. The actual representation of the state is now described by an implementation of the `QRepr` base class, which it references via `QState.qrepr` attribute.
+- The `QState` object remains responsible for mapping the qubits that share it to the representation that it holds, as the `QRepr` has no notion of `Qubit` objects -- it refers to qubits using _indices_.
+- The `QRepr` class is subclassed by NetSquid's five formalisms: `KetRepr`, `DenseDMRepr`, `SparseDMRepr`, `StabRepr`, `GSLCRepr`. `DenseDMRepr`, `SparseDMRepr` do so via the base class `DMRepr`.
+- The size of a `QRepr` instance is immutable, and so are its methods by default. Some methods can be used to mutate the instance inplace via the `modify` flag. See the documentation for more info about this new class.
+- Refactored `QFormalism` to be an extendable class (previously Enum), so that users can add extra formalisms (e.g. via snippets). The values of its attributes are now `QRepr` types. It is no longer possible to check if a formalism is an instance of QFormalism.
+- The _qubits.qrepr_ module has a `convert_to` function for conversions between `QRepr` instances. Supported conversions can be (de)registered by other modules.
+- When speciying a formalism to `qubitapi.assign_qstate`, any `QRepr` type can be given, as well as `None` (e.g. as a vacuum state).
+- `QState` has the new property `num_qubits` and new method `indices_of(qubits)`.
+
+Deprecations:
+- Deprecated `DMState`, `KetState`, `SparseDMState`, `StabState` and `GSLCState`.
+- Directly operating, measuring and calculating fidelity on a `QState` is deprecated. Only operations that change the qubits in the `QState` remain.
+- The properties of `QState` used to inspect the state like `dm`, `ket` and `stab` are deprecated.
+- Deprecated `qformalism.convert_qsrepr` to be replaced by `qformalism.convert_qrepr`.
+- `qformalism.get_formalism_of_qstate` function deprecated.
+
+#### State sampler
+
+- Added support for `QRepr` instances in the `StateSampler`. It continues to support numpy arrays inputs, but all leaves are converted and returned as a `QRepr` or None.
+- `state_sampler.Sample` has the `state` attribute renamed to `qrepr` (former deprecated).
+- The _statesampler_ module has been ported to Cython efficiency.
+- Added support for sparse density matrices to the `StateSampler`.
+
+#### Stabiliser formalism
+
+- Changed the internal representation of `StabRepr` to a double tableau instead of single. This results in double the memory usage, but the measurement time complexity has been reduced from `O(n^3)` to `O(n^2)`.
+- Deprecated `Stabilizer` in favor of `StabRepr`.
+
+#### Protocols
+
+- Added `await_mempos_busy_toggle` and `await_mempos_in_use_toggle` to `Protocol`, which can be used to wait until the `busy` or `in_use` flag of a `MemoryPosition` is toggled.
+- Added support for retrieving different signal results via their triggered events if they were sent in the same time instance.
+
+#### QSource
+
+- The `QSource` omits new pulse generation in case the `StateSampler` returns a vacuum (i.e. `None`) state. 
+
+#### Quantum memory
+
+- The `positions` argument for the methods `peek`, `delta_time` and `operate` of `QuantumMemory` no longer takes a default value of 0.
+- Deprecated the `QuantumMemory` methods `{get,set}_position_used()`, `get_position_empty()`. The `in_use` and `is_empty` attributes of a memory position can be accessed directly.
+- Deprecated the `Channel.evtype_outputready` attribute by removing its documentation. The `Port.evtype_output` should be used instead.
+- Added `QuantumMemory.used_positions` property and deprecated `QuantumMemory.num_used_positions`.
+- Deprecated `QuantumMemory.signal` in favor of `QuantumMemory.send_signal`.
+
+#### Quantum processor
+
+- Renamed (and deprecated) `PhysicalIndex.num` to `PhysicalIndex.position`.
+- Renamed (and deprecated) `PhysicalInstruction.{c,q}_noise_model` to `PhysicalInstruction.{classical,quantum}_noise_model`.
+- Replaced keyword various uses of `**params`, `**program_kwargs` to `**parameters`.
+
+#### Misc
+
+- Added an `INSTR_MEASURE_FAULTY` to `instructions.py`.
+- Added `BELL_PROJECTORS` to `operators.py` which are the Bell state projectors corresponding to the `BellIndex`.
+- Removed support for usage of `|` and `>>` with `Operators`.
+
+Release 0.10
+------------
+
+### Major new features
+
+#### Two new formalisms
+
+- Added the SPARSEDM formalism, which implements a density matrix representation for shared quantum states using sparse instead of dense matrices.
+- Added the GSLC (Graph States with Local Cliffords) formalism, which implements another stabilizer state representation for shared quantum states. It outperforms the tableau representation (STAB formalism) under certain conditions, such as when the graph states are sparse.
+
+#### A QuantumDetector component
+
+- Added a general `QuantumDetector` class to model a diverse range of hardware devices that detect qubits.
+- Added a `GatedQuantumDetector`, a subclass of `QuantumDetector` that add support for detection time windows.
+
+#### Composite instructions for quantum processors
+
+- Option to add _composite instructions_ to a quantum processor. These are valid (i.e. executable) instructions that are defined in terms of sequence of lower level physical instructions. Composite instructions deprecate the _super instructions_ feature.
+- A `netsquid.components.qproccesor.PhysicalIndex` class can be used to define composite instructions in terms of physical memory positions.
+
+### Minor new features and improvements
+
+#### QuantumProcessor and QuantumPrograms
+
+- Added a `lazy` flag in `Program.run()`. When set to True the program will execute all of the instructions in a sequence at the end of the sequence, which avoids scheudling intermediate jobs. To do this the processor keeps track of a 'fake' simulation time to properly account for noise. 
+- The `execute_program` method of `QuantumProcessor` now returns an `EvenExpression` instead of the expected run time, which makes it easier for a protocol to _yield_ on a program finishing. The `execute_instruction` method now returns an EventExpression as a third tuple value.
+- Added an imperfect projective measurement instruction `IMeasureFaulty`.
+- Added a `QuantumProcessor.active_instructions()` method that returns the instructions that are being executed by the processor.
+
+#### Networking
+
+- Port forwarding can now also be setup between ports of the same component.
+- You can now remove nodes and connections from networks using `network.remove_node` and `network.remove_connection` respectively.
+- Added a way to combine two networks using `Network.combine(other)`.
+- Ports of subcomponents can now directly forward output/input to/from ports of its supercomponent when being _added_ as subcomponent.
+
+#### Others
+
+- Added full support for conversion from KET states to stabiliser states (STAB, and GSLC via STAB).
+- Added enumeration `ketstates.BellIndex` that defines indices that relate to the Bell states.
+- Optimized Stabilizers to use `netsquid.qubits.cliffords.Clifford` instead of looking at the matrix of the operator.
+- `qubitapi.combine_qubits` now returns a list of qubits with same ordering as in shared quantum state
+- Cythonized the _qsource_ module.
+
+Release 0.9
+-----------
+
+### Change to authenticated access for online documentation and pypi server
+
+- Access to the [online documentation](https://docs.netsquid.org) and to the NetSquid python package server now requires valid user credentials for the [NetSquid forum](https://forum.netsquid.org).
+- Access to the package server must be explicitly granted by an administrator until the user license agreement has been finalised.
+
+### Major new features and improvements
+
+#### Added a Network component
+
+- The `Network` component holds and manages `Nodes` and the `Connections` between them. 
+- It supports automatic creation of `Nodes` and `Connections`, and connecting `Nodes` via `Connections`.
+
+#### New protocol subclasses
+
+- Added `ServiceProtocol`, an abstract subclass of `NodeProtocol` that defines an interface for specifying service requests and responses.
+- Added `DataNodeProtocol`, an abstract subclass of `NodeProtocol` intended for processing incoming data on ports e.g. from connections. It replaces the `DataProtocol`, which has been been deprecated.
+
+#### Quantum program arguments and concatenation
+
+- Added a `qubit_mapping` parameter to a QuantumProgram constructor to allow concatenation of programs with different numbers of qubits or different qubit mappings.
+- Keyword arguments can now be passed through to a quantum program calling the `execute_program` method of a quantum processor.
+
+#### Improved documentation
+
+- Changes to tutorial and getting started guide based on user feedback (alpha test).
+- Added an example module for simulating repeater chains.
+- Added an example module that simulates a link layer protocol.
+- Added walkthrough guides for all examples.
+- Added table of contents and learning goals to tutorial.
+
+### Minor features and improvements
+
+- Forwarding the input of a port is only allowed to a sub-component, and forwarding the output of a port is only allowed to a super-component.
+- Added a `filter_by_type(self, value_type)` to `ConstraintMap`, which will return a `ConstrainedMapView` which has everything that is not the given type filtered out.
+- A `ConstrainedMapView` allows viewing the data of the `ConstraintMap` without changing it.
+- The _components.fibres_ module has been deprecated. The standard classical and quantum channels with the appropriate fibre models can be used instead.
+
+### New package version dependencies
+
+- The required pyDynAA version is 0.3
+- Set minimum Numpy dependency to version 1.16
+- Set minimum SciPy dependency to version 1.3
+- Set minimum Pandas depencency to version 0.25
+
+Release 0.8
+-----------
+
+### New minimum python dependency
+
+- Raised minimal Python version to 3.6 (previously 3.5)
+
+### Major new features and improvements
+
+#### Added a complete tutorial
+
+- The new tutorial can be found in the [docs](https://docs.netsquid.org/0-8-stable/tutorial.intro.html).
+- The tutorial builds up a teleportation protocol between Alice and Bob, and includes sections about qubit manipulation, discrete event simulation, components, composite components, quantum processor and programs and protocols. Mostly incorporated the old overview documentation.
+- The final section that builds up a full working example of the things learned in the previous tutorials.
+- A getting started guide gives a very brief summary of the tutorial topics.
+
+#### Protocols run method now yields directly on event expressions
+
+- The *run()* method of Protocol, which should return a generator, now expects yield statements to return an `EventExpression` instead of the `AwaitCondition` introduced in version 0.7 (which is now removed).
+- The return value from a yield (`expr = yield self.await_*`) is a *copy* of the `EventExpression` that was yielded on. 
+It contains information on the atomic expressions were triggered and with which events, which can be used to retrieve any results (such as messages available at the port for example).
+- `Protocol.await_event` and `Protocol.await_eventexpression` are removed as they are obviated by yielding on event expressions directly.
+- Renamed `Protocol.await_sleep` (now deprecated) to `Protocol.await_timer`. Timer starts when calling the method, not when yielding on the return value. 
+- Functionality of other `Protocol.await_*` methods remain unchanged. 
+- Added `Protocol.await_program` method.
+- Removed `AwaitCondition` and all its subclasses.
+
+#### Bell measurement instruction
+
+- Added `instructions.INSTR_MEASURE_BELL` instruction that does Bell state measurement on two qubits.
+- The `instructions.IMeasure` class now accepts optional `meas_operators` parameter, which overrides the `observable` parameter.
+- Added `instructions.IMeasureBell` class (subclass of `IMeasure`) that defines the general measurement operators, but will use individual operations in the case of stabiliser formalism.
+
+### Minor features and improvements
+
+##### QuantumProcessor
+
+- Moved initializing of topologies from the `QuantumProcessor` constructor to the individual `PhysicalInstruction` constructor.
+- The done/fail callbacks of a `QuantumProcessor` that are called once now automatically remove themselves to avoid an unneeded call to `dismiss`.
+
+##### Protocols
+
+- `DataProtocol` now subclasses `NodeProtocol`.
+
+##### Components and Ports
+
+- Added attributes `notify_all_{input,output}` to `Port` which, in contrast to the `notify_next_{input,output}` attributes, will ensure all input and output messages schedule an event.
+
+##### Quantum memory
+
+- The `measure` method of a `QuantumMemory` supports multi-qubit measurements if the dimensions of the measurement operators match the list of qubits given. If they don't match each qubit will be measured individually.
+- The `IMeasure` instruction also supports multi-qubit measurements, identical to the `measure` method.
+
+##### Qubits
+
+- Added the *qubits.ketutil* module, with the specialised functions `reduced_dm()`, `partial_trace()`, `reorder_ket()`, `ket_fidelity()` for ket vectors.
+- Moved all ket vector utility functions in *ketstates.py* (`dagger()`, `ket2dm()`, ...) to *ketutil.py*.
+- Added `reduced_dm()` to *dmutil.py* module.
+- `qubitapi.fidelity()` now calls `QState.fidelity()` instead of directly implementing the fidelity measurement, so that each QState can implement an optimized method. `QState.fidelity()` now also supports Ket and DM reference states.
+- Improved `KetState.fidelity()` by avoiding the construction of an intermediary density matrix.
+
+Release 0.7
+-----------
+
+### Major new features and improvements
+
+#### Protocols support sequential flow using yield
+
+- The `Protocol` class has been refactored to support the sequential implementation of protocols using `yield` statements (similar to `await` of _asyncio_ package). Use of this feature is optional; a callback implementation is also still possible.
+- To write a protocol sequentially the `Protocol.run` method should be overridden to use `yield` statements.
+- An overridden run method is expected to yield on `AwaitCondition`s that specify the condition(s) that should be met before the protocol continues e.g. event expressions, specific events (`EventCondition`), delay/sleep (`SleepCondition`), port IO (`PortCondition`), and signals (`SignalCondition`).
+- The methods `Protocol.await_{expression,event,sleep,port_input,port_output,signal}` help to create conditions.
+- A yield can wait on multiple `AwaitCondition`s with the `&` and `|` operators.
+- The yield will return the outcome of any conditions that triggered the protocol to continue.
+
+#### Re-design of how event expressions are handled
+
+- pyDynAA, the discrete event engine, is now an external package dependency (instead of a subpackage) that must be **installed separately**.
+- pyDynAA is updated to v0.2 (version required by NetSquid), which includes a re-design of how event expressions work.
+- Event expressions are _waited_ on by entities using an `pydynaa.ExpressionHandler`, similarly to how events are waited on, e.g. `entity._wait{_once}(handler, expression=evexpr)`, and continuous waiting is supported.
+- `ExpressionHandler`s are subclass of `EventHandler` and hold a callback function that takes the triggering event expression as its argument (instead of the triggering event as for event handlers).
+- Expression handlers can be dismissed using an entity e.g. `entity._dismiss(handler, expression=evexpr)` or `entity._dismiss(handler)`.
+- Expressions handlers can be re-used to wait on multiple event expressions (the same also holds for event handlers).
+- Multiple expression handlers can wait on the same event expression. They will be executed in order of their priority, if any.
+- Event expressions store a sorted list of the atomic events that triggered them in the `EventExpression.triggered_events` attribute.
+- The `ExpressionHandler.wait()` method is deprecated.
+
+#### Restructuring of component models
+
+- The models in _netsquid.components.models_ subpackage have been restructured. Inparticular the `Model` base class has the two main subclasses `ErrorModel` and `DelayModel`.
+- `ErrorModel` represent both loss and noise models and is sublcassed by `QuantumErrorModel` and `ClassicalErrorModel`. The former checks that items are `Qubit`s or None, while the latter checks that items do not contain qubits.
+- The `qerrormodels.QuantumErrorModel.lose_qubit` method can be used by quantum error models to lose qubits bits in a manner consistent with the qubit being a number state or not.
+- `DepolarNoiseModel`, `DephaseNoiseModel` and `T1T2NoiseModel` now override `ErrorModel.error_operation` method instead of `noise_operation`.
+- Made models concatenable: most models can be added together (with the `+` operator). Errors or delays are applied consecutively. Models can also be multiplied (`*`) with an integer to apply the same model multiple times. Can work in combination with addition so you can chain complex models.
+
+#### A subpackage for examples
+
+- The subpackage `netsquid.examples` contains the examples modules _entanglenodes_, _purify_, and _repeater_, which are based on the example protocols from the _NetSquid-QRepeater_ snippets.
+- The examples have been largely refactored to make use of ports and the new protocol yield flow. The modules also contain functions to setup example networks and example simulations with data collection.
+- The example modules double as integration tests. They replace the previous external tests provided by importing the _QRepeater_ snippet as a submodule.
+
+#### Operators can be represented using sparse matrices
+
+- Added support for representing `Operator`s using sparse matrices in _opmath_ and _operators_ modules.
+- Added a `Operator.use_sparse` property, which is set to True if an operator is constructed using a sparse matrix, and can be toggled.
+- If `use_sparse` is True, all methods of operator will, where possible, use sparse matrices and avoid conversions to a dense matrix.
+- Padding matrices automatically use either sparse or dense operator representation based on a threshold (set at 5)
+
+### General improvements
+
+
+#### netsquid.qubits
+
+- `qubitapi.fidelity()` function has the `reference_ket` parameter renamed to `reference_state`. The reference state can now also be a density matrix.
+- Optimized logic in _opmath_ that creates SWAP matrices for padding.
+- The `StateSampler`s tree of states is now automatically flattened and combines samples with the same label and state (in case of equal formalism) at construction.
+- It is now possible to convert states in a `StateSampler` to a requested formalism at initialization using the `formalism` parameter.
+- Added a `reduce_states` method which reduces all density matrices with the same label into one. Convert states to DM formalism first if you want to reduce stabilizer and ket states as well.
+- Returned labels in state sampler no longer always return tuples; now only if additional `StateSampler`s were supplied in the constructor.
+- Moved sparse matrix methods from _opmath_ into new _qubits.sparseutil_ module to avoid circular imports.
+
+#### netsquid.{components,nodes}
+
+- Added the `IEmit` instruction that emits a qubit entangled with a qubit on the `QuantumMemory` when this latter qubit was in state |0>.
+- `MemoryPosition` can now be reset even when it is busy to make it easier to reset a simulation with multiple memories running in parallel.
+- Qubits in a `MemoryPosition` are now discarded when they are replaced with another qubit (or `None`).
+- The metadata of a `MemoryPosition` will be set to `None` if the qubit is set to `None`.
+- Setting a qubit on a `MemoryPosition` that is busy (via `set_qubit` or otherwise inputing a qubit via a quantum memory) nows raise a `MemPositionBusyError`.
+- Only the memory positions of a `QuantumProcessor` involved in (mapped to) quantum program are set to busy.
+- `Clock` component: instead of taking a `delay` as argument of the `start` method, a `start_delay` can be passed to the constructor and will be stored as a property of the clock. To change the delay, the user can edit this property via `Clock.properties["start_delay"]`.
+- The `Port` class now has attributes (and constructor parameters) `always_notify_{input,output}`, which if set to True (default False), mean the port will always schedule an event on incoming or outgoing messages.
+- Besides "qin" and "qout" ports, the `QuantumMemory` class also "qin{0..n}" input ports for each individual memory position. All "qin" ports have `always_notify_input` attribute set to True.
+- The `QSource` component has a new `output_meta` attribute (and constructor parameter) that allows specifying additional meta data in its outgoing messages.
+- The `ISwap` instruction no longer uses the `put` method to swap methods qubits, and thereby will no longer schedule any event.
+- If the `ID` parameter of a `Node` is not given at construction, then an incremental int is chosen (starting from 0). Previously a unique (but large) int was generated.
+- Added a `models` constructor parameter to all subclasses of `Component` that accepts a dictionary of models. Other parameters that specified parameters for a model are deprecated. The main affected components are subclasses of `Channel` with their `delay_model` and `classical/quantum_noise/loss_model`, and the `QSource`.
+- Fix memory leakage in `QSource` where internal dictionaries were not cleared after each emission.
+
+#### netsquid.util
+
+- `DataCollector` has a `databuffer` property for accessing the list of data collected since the last call to dataframe i.e. before its conversion into a dataframe.
+- `DataCollector.get_data_function` now supports the use of callback functions that take an event expression parameter rather than an event.
+- The `DataCollector` now has options in its constructor to disable the 'entity_name' and 'time_stamp' columns to be stored in its dataframe.
+- The `DataCollector` checks for a valid `MutableMapping` as a return value of the `get_data_function`. When returning `None` or the data (including the default columns) is empty, nothing will be appended to its dataframe.
+- Added `netsquid.util.simlog.check_memory_usage` context manager that can be used to check that NetSquid does not allocate more memory than expected within a code block.
+- Renamed `ProtectedMap` to `ConstrainedMap` and moved it to `util.constrainedmap`. It is now possible to set a `ValueConstraint` to check if values are valid.
+- The `setter_fn` functionality of `ConstrainedMap` is now encapsulated in a list of global constraints in the ConstrainedMap.
+- Attempted to change an immutable object of a `ConstrainedMap` now raises an `ImmutabilityError` instead of an `AttributeError`.
+
+#### misc
+
+- Documentation is now included in the NetSquid binary wheel package.
+
+### Removed functionality and deprecations
+
+- In `QuantumMemory`: renamed `noise_models` to `memory_noise_models` (former is now deprecated) and added a `models` parameter in the init of `QuantumMemory`.
+- `TimedProtocol` renamed to `TimedNodeProtocol`, a subclass of `NodeProtocol`, and no longer accepts a `connection` parameter.
+- Deprecated callback management methods and functionality for `Protocol` and `Node`.
+- Deprecated special container methods (`__getitem__`, `__setitem__`, `__contains__` and `__delitem__`) of `Node` for accessing its `Node.cdata` dict attribute.
+- Removed dependency on _bitarray_ module
+    - Moved all bit encodings to the _NetSquid-BitEncoding_ snippet.
+    - Bit encoding related functionality has moved from `netsquid.components.ccoding` to `netsquid_bitencoding.bitcoding`
+    - Bit noise models have moved from `netsquid.components.models.cnoisemodels` to `netsquid_bitencoding.bitnoisemodels`
+- Removed methods `prob_item_lost` and `apply_loss` from `qerrormodels.FibreLossModel`, which are now done by `error_operation`.
+- Deprecated `LossModel` and moved `FibreLossModel` to the `QuantumErrorModel` module.
+
+Release 0.6
+-----------
+
+### Major new features
+
+#### ProtectedMap used by Components
+
+- The `Component` collections _ports_, _properties_, _subcomponents_ (formerly _components)_, and _models_ are stored using a `ProtectedMap`
+object.
+- The new class `ProtectedMap` is a subclass of `collections.Mapping` that behaves like a dict but with restricted set
+and delete methods, and with support for tracking the _type_ and _mutability_ of each item.
+- The `Component` constructor has optional parameters (existing parameter: `properties`, and new parameters: `models`, `subcomponents` and `port_names`)
+that can be used to specify and set these collections.
+    - Note that `properties` added this way are mutable: to add an immutable property use the `add_property()` method with `mutable=False` as argument.
+    - `ports` added this way are immutable. You can add additional ports using the `add_ports()` method.
+    - `models` added this way cannot be removed, but can be overwritten using `Component.models[name_model] = model`. Additional `models` should first be specified
+    using `specify_model()` and then be set using the same 'dictionary set format'.
+    - To add new or overwrite existing `subcomponents` you can use `add_subcomponents()` and `rem_subcomponents()` to remove them.
+    See the sub and super components improvement below).
+
+#### StateSampler
+
+- A new `StateSampler` class is added, which can sample from quantum state representations by assigning a probability to each. It is itself also a valid representation, so that a state sampler can hold a tree of states to
+arbitrary depth. It is used by the refactored `QSource` for generating qubits from different states (see the `QSource`
+improvement below).
+- The `StateSampler` can be used with the new `assign_qstate()` function added to the _qubitapi_ module. This function allows assigning a custom quantum state to existing qubits. This can be a ket array, dm array,  `Stabilizer`, or `StateSampler`, and will be assigned to the created qubits using the current (or a specified) QFormalism.
+- When creating qubits to which you would like to assign a state after creation, you can now use the `no_state` parameter of the `create_qubits()` function in the _qubitapi_ module, which if True will not assign the default `|0>` states to the created qubits.
+
+#### QSource
+- `QSource` is redesigned: the source can now create an arbitrary number of qubits, with states sampled from its `StateSampler`, and put them on any number of output ports. The source can be either in internal or external mode,
+meaning it will either be triggered to start an emission by its internal `Clock` or by a message on its trigger port.
+
+#### Clock
+
+- A `Clock` class is added which can be used by other components to keep time. The clock works by sending messages to its "cout" port at specific time intervals. A timing model can be used to model timing inaccuracies.
+
+#### Logging
+
+- Module _util.simstats_ added with the class `SimStats`, including a context manager method `record()`. It is used by
+`sim_run()` to record a variety of simulation stats, such as number of triggered events, called handlers, quantum operations stats, etc.
+- The `sim_run()` function returns a `SimStats` object which contains the recorded data. Printing the object gives a convenient summary.
+- NetSquid modules now define their own loggers. All netsquid package loggers can be accessed via the `util.simlog.get_loggers()` function.
+This is useful, for example, to tune which modules you wish to debug.
+
+### Improvements
+
+#### Sub and Super Components
+
+- `Component` has a `supercomponent` property that refers to its parent composite component if present, otherwise None.
+- `Component.components` property is deprecated by the `Component.subcomponents` property that returns a list of (name, component) tuples.
+- Added the methods `has_supercomponent` and `has_subcomponent` to `Component` for checking if a component is a super or sub component at any depth. These help to prevent circular hierachies when adding subcomponents.
+- The ports of subcomponents can only be _connected_ if they have the same supercomponent (parent). This ensures that a component's ports are its only IO interface; subcomponents must use _forwarding_ to communicate beyond their supercomponent.
+
+#### QuantumMemory
+
+- Added possibility to pass properties when initiating a `QuantumMemory`. These properties are also assigned to each of its memory positions.
+- Memory positions can now be toggled to `in_use` (via `QuantumMemory.set_position_used`) also if they do not hold a qubit.
+- Added ports "qin" and "qout" to `QuantumMemory`, which replace the "qubitIO" port.
+- Added `emission_noise_model` and `absorption_noise_model` to `QuantumMemory` for output and input noise respectively.
+- Made each `MemoryPosition` a `Component`, which are held as subcomponents of `QuantumMemory` and available via the `mem_positions` property.
+- `MemoryPosition` has a `meta` property for holding arbitrary meta information for the held qubit. This meta is adopted from input messages and merged into output messages.
+- The `pop()` method of `QuantumMemory` now has the optional parameter `meta_data` for specifying additional meta data to add to an outgoing message (overrides existing meta).
+- Added the `QuantumMemory` methods `get_matching_qubits` and `get_matching_positions`.
+
+#### Quantum states and qubit api
+
+- Added _qubits.qformalism_ module that now houses `QFormalism` enum class and related functions including `{get,set}_qstate_formalism` and `convert_qstate` (formerly `convert_qstate_formalism`). It also has the new function `convert_qsrepr`.
+- The `QState` class has a `qubits` attribute which returns a list of qubits sharing the state, which are sorted according to the current data representation.
+- In `QState` constructor a warning is no longer logged when the quantum state of qubit is overridden by a new quantum state. It is still discarded from the old state.
+
+###### Multi operate
+
+- `multi_operate` function in _qubitapi_ supports also pure state KET formalism by using sampling.
+- Added `multi_operate_qubits` method to `KetState` and `QState`.
+- Added `multi_operate_dm` function to _opmath_ module.
+
+###### Stabilizer
+
+- The `Stabilizer` class no longer has setters for its check matrix and phases, which means it is no longer possible to change its size. Create a new object instead.
+- The `row_reduce` methods of `Stabilizer` class is now publicly accessible from Python.
+- Added the methods `measure` and `generator_to_matrix` to `Stabilizer` class.
+- Refactored (Cython) implementation of _stabtools_ module.
+- The `StabState` class constructor now takes a `Stabilizer` representation object instead of a check matrix with phases (the latter parameters are deprecated).
+
+###### Converting quantum states
+
+- It's now possible to combine the quantum states of qubits with heterogeneous formalisms. The conversion to the current formalism is handled automatically (via `combine_qubits` function).
+- Added the function `convert_qstate_formalism` to the _qubitapi_ module to support quantum state formalism conversion.
+- Added functions `dm2kets` and `sample_ket_from_dm` to _ketstates_ module. These use an eigendecomposition to convert a density matrix into pure states.
+- Added `ket2stabilizer` function to _stabtools_ module that converts selected 1 and 2 qubit ket vectors to Stabilizer objects.
+
+#### Operators
+
+- Added the property `Operator.inv` that returns the inverse version of an operator.
+- Added the property `Operator.conj` that returns the complex conjugated version of an operator.
+- `Operator.controlled` property renamed to `Operator.ctrl`. Former is now deprecated.
+- `Operator` equality operators (`__eq__` and `__neq__`) now check if matrix representations are (almost) equal. To check for identical objects use `is`.
+
+#### pydynaa
+
+- The simulation engine of _pydynaa_ has improved signal handling, including keyboard interrupts (CTRL-C). It also behaves more robustly on python callback exceptions.
+
+#### Other
+
+- The _netsquid.simutil_ module has been moved to _netsquid.util.simtools_. The former location is deprecated.
+- Added `__repr__` to `Message` class.
+- Added `__repr__` to classes `Qubit`, `QState`, `KetState`, `DMState`, `StabState`, which replace existing `__str__` in each case.
+- Component subclasses using models (`Channel`, `QuantumMemory`, `MemoryPosition`, etc.) now use the _models_ map
+instead of private variables.
+- Ports do debug logging of transmitted input and output messages (`tx_input` and `tx_output` methods). This replaces debug logging of Channel send and receive.
+
+### Bug fixes
+
+- None
+
+### Deprecated
+
+- Deprecated the methods `get_positions_of_event`, `get_put_event`, `get_positions_for_type`, and `get_qubit_type` of `QuantumMemory`.
+- Deprecated `put_event` parameter for the `peek` and `pop` methods of `QuantumMemory`.
+- `QuantumMemory` methods `get_noise_model` and `set_noise_model` are deprecated. Use the _models_ property of the memory position subcomponents instead.
+- `Channel` methods `register_handler` and `clear_handler` and property `length` deprecated.
+- All attributes for ports and models have been deprecated in favour of access via respective maps, including
+`Channel.port_{send,recv}`, `QuantumMemory.port_{qin,qout}`, `Channel.delay_model`,
+`QuantumChannel.{quantum_noise_model,quantum_loss_model}`, etc.
+- The methods `set_console_debug` and `set_console_log` are now deprecated (use `logger.setLevel` instead).
+
+Release 0.5
+-----------
+
+### Major new features
+
+#### Modular and connectable components
+
+- `Component`s can hold `Port`s, which can be accessed via the `ports` attribute (dict), and added with `add_ports` method. Ports provide a gateway interface for seamless inter-component communication and provide a modular mechanism with which to build composite components from sub-components. Ports communicate using a generic `Message` class, and have functionality to _connect_ or _forward_ to other ports, or _bind_ to handler functions. See the documentation pages for more details. 
+- `Component`s can hold subcomponents via the `components` attribute; subcomponents can be added using the `add_component` method.
+
+#### Models and component properties
+
+- `Component`s have a `properties` attribute (dict) that specifies the characteristics of the component e.g. a _length_ property in the case of a channel. The component's properties are now passed as input to models, instead of a reference to the component itself.
+- All _models_ now subclass the `Model` base class, and similarly have a `properties` attribute for relevant parameters. Models can specify the additional input properties they need via the `required_properties` attribute. In this way they are independent of components i.e. they need no knowledge.
+ - When a model is assigned to a component a `validate` method can be called to check the component provides the _required properties_ that the model needs.
+
+#### Data collecting functionality
+
+- A new `DataCollector` class is added to the `netsquid.util` subpackage (this subpackage replaces `netsquid.cyutil`). A `DataCollector` can collect data when triggered by events. The data is provided in the form of a `pandas.DataFrame` for further processing by the uder (e.g. plotting or exporting to a different file format).
+
+### Improvements
+
+#### QuantumProcessor
+
++ `QuantumProcessor` now re-peeks qubits after applying an instruction to allow for applying noise to newly created qubits (e.g. after `INSTR_INIT`).
++ When manually constructing a `QState` (e.g. `DMState`, `KetState`, etc.) it is checked if the qubits already share a non-trivial quantum state. If so, they are first discarded (dropped) from this state, and a warning is printed.
+
+#### QuantumMemory
+
++ Concept of _in use_ now differs from the position being _empty_. Toggling a qubit to _not used_ will leave the qubit on the memory. Toggling an empty position to _used_ will raise an error. Setting or removing a qubit still toggle _used_ status as before.
++ When a qubit is replaced on a memory position the replaced qubit now has memory noise applied up to the time of replacement (it is still not _discarded_ i.e. it remains in its shared quantum state).
++ `get_position_empty` method  returns whether memory position is empty.
+
+#### Operators
+
+`Operator` class has a `controlled` attribute that return the controlled version of the operator. This deprecates `create_controlled_op`. The naming of controlled operators has changed to drop the square brackets e.g. `C[X]` to `CX` and we have added extra standard operators and instructions: `CX`, `CCX`, `TOFFOLI`, `Rx90`, `Rx180` and `Rx270` (and 'y' and 'z' equivalents). Note here that `Operator.protect`  is now removed because `Operator`s are no longer compared by their names (str) but based on object instance.
+
+#### Stabilizers
+
+Changes to how `Stabilizer` class represents its quantum state: the combination (x=1,z=1) in the _check matrix_ now represents Y (formerly X*Z). As a result the _phases_ array is purely real (storing only +1/-1).
+
+#### Performance increase
+
+- Internal methods in `stabtools` have been greatly optimized in C/Cython, making it much faster (~10x, see [this comment](https://ci.tno.nl/gitlab/QuTech/NetSQUID/issues/161#note_57898)).
+- Several optimizations for DM and KET formalisms have made both generally faster (and considerably faster for some specific cases).
+
+### Adapting to numpy
+
++ Converted to using numpy `array` everywhere instead of `matrix`, as the latter is pending deprecation by numpy. **Note:** to do matrix multiplication between arrays use `@` (`*` does element wise multiplication).
++ The ket vectors in _ketstates_ module are now also numpy arrays.
+
+#### Other improvements
+
+- The _ketstates_ module now has helper functions `dagger(array)` (conjugate transpose), `innerprod(ket)`, `outerprod(ket)`, and `ket2dm(ket)`.
+
+### Bug fixes
+
+- `dmutil.reorder_dm()` (used by `fidelity()` and `reduced_dm()` in *qubitapi* module) was missing a final transpose, which makes a difference if the DM has complex elements.
+
+### Deprecated
+
+#### Features of Operator
+
++ `Operator.mat` property has been deprecated. Use `Operator.arr` to get an array instead.
++ `Operator` no longer has the `clifford_transform` method. This functionality has migrated to `stabtools` module as a private function.
++ Similarly, `Operator.padded_matrix` method is _deprecated_ and the corresponding function has been moved to `opmath`.
+
+#### Features of Channel and Node
+
+Several featues of `Channel` and `Node` have been deprecated, for example the complete _nodeapi_ module and its functions `create_nodes` and `link_nodes` in favour of using `Node()` constructor and the new `Node.connect_to` method. For more details you can check the [documentation](https://docs.netsquid.org/).

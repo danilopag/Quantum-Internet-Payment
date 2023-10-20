@@ -1,0 +1,6 @@
+netsquid\.qubits\.qformalism
+----------------------------
+
+.. automodule:: netsquid.qubits.qformalism
+    :members:
+    :show-inheritance:

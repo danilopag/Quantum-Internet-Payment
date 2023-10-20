@@ -1,0 +1,6 @@
+netsquid\.nodes\.network
+----------------------------
+
+.. automodule:: netsquid.nodes.network
+    :members:
+    :show-inheritance:

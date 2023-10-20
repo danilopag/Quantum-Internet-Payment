@@ -1,0 +1,22 @@
+Examples
+========
+
+The examples listed here are fully worked out example networks and protocols.
+You will learn the most by studying the code in the module files directly.
+
+You can use this Python script to locate the directory of example modules on your system:
+
+.. code-block:: python
+
+    import os
+    import netsquid as ns
+    print("Examples directory: {}".format(os.path.dirname(ns.examples.__file__)))
+
+.. toctree::
+    :maxdepth: 2
+
+    learn_examples/learn.examples.teleportation
+    learn_examples/learn.examples.repeater
+    learn_examples/learn.examples.repeater_chain
+    learn_examples/learn.examples.simple_link
+    learn_examples/learn.examples.magic_simple_link

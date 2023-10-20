@@ -1,0 +1,6 @@
+netsquid\.qubits\.state_sampler
+-------------------------------
+
+.. automodule:: netsquid.qubits.state_sampler
+    :members:
+    :show-inheritance:

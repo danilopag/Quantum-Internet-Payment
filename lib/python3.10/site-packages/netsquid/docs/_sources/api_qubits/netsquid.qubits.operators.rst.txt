@@ -1,0 +1,6 @@
+netsquid\.qubits\.operators
+---------------------------
+
+.. automodule:: netsquid.qubits.operators
+    :members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+netsquid\.components\.models\.errormodels
+-----------------------------------------
+
+.. automodule:: netsquid.components.models.errormodels
+    :members:
+    :show-inheritance:
+    :inherited-members:

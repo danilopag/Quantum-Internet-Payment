@@ -1,0 +1,7 @@
+netsquid\.components\.switch
+----------------------------
+
+.. automodule:: netsquid.components.switch
+    :members:
+    :show-inheritance:
+    :inherited-members:

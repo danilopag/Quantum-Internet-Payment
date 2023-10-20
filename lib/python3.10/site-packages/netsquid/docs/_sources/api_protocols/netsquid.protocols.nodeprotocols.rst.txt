@@ -1,0 +1,6 @@
+netsquid\.protocols\.nodeprotocols
+----------------------------------
+
+.. automodule:: netsquid.protocols.nodeprotocols
+    :members:
+    :show-inheritance:

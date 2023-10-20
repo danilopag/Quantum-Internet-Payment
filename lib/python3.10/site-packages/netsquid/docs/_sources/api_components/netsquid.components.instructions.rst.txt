@@ -1,0 +1,7 @@
+netsquid\.components\.instructions
+----------------------------------
+
+.. automodule:: netsquid.components.instructions
+    :members:
+    :show-inheritance:
+    :inherited-members:

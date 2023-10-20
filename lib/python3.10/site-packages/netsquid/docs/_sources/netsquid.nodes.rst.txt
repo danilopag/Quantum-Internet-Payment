@@ -1,0 +1,13 @@
+netsquid\.nodes
+===============
+
+*Nodes* are composite components that represent the location entities (:py:obj:`~pydynaa.core.Entity`) of a quantum network. At these locations classical and quantum operations are considered local.
+*Connections* are composite components that link remote nodes.
+
+.. toctree::
+    :caption: Modules
+    :maxdepth: 2
+
+    api_nodes/netsquid.nodes.node
+    api_nodes/netsquid.nodes.connections
+    api_nodes/netsquid.nodes.network

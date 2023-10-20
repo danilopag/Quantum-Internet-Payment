@@ -1,0 +1,15 @@
+netsquid\.components\.qprocessor
+--------------------------------
+
+.. automodule:: netsquid.components.qprocessor
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+.. attribute:: netsquid.components.qprocessor.error_on_program_fail
+
+   *bool* - Whether to always raise the exception that causes a quantum processor to fail instead of only record it. Default is False.
+
+.. attribute:: netsquid.components.qprocessor.nv_super_instructions
+
+   *dict* - processor instruction hierarchy (based on NV centres).

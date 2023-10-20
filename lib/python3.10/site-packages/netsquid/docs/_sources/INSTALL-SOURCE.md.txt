@@ -1,0 +1,170 @@
+Building and installing NetSquid from source
+============================================
+
+This file gives instructions for how to build, install, and deploy NetSquid from its source code.
+It is intended for developers and requires that you have been given access to the source repository.
+Note that NetSquid is not open source: it has a proprietary software [LICENSE](LICENSE.md).
+If you only wish to install and run NetSquid,
+then please refer to the [INSTALL](INSTALL.md) file instead.
+
+Building and installing the NetSquid package
+--------------------------------------------
+
+Prerequisites to build NetSquid from source are:
+- Download access to the [NetSquid](https://ci.tno.nl/gitlab/QuTech/NetSQUID/) Git repository.
+- Python 3 header files (e.g. the _python3-dev_ package for some linux distros).
+- Python 3.6 or higher and the Python packages listed in [requirements.txt](requirements.txt) (note: link only works on Gitlab).
+- The python package install [pip](https://pip.pypa.io/en/stable/) version 19 or higher. To upgrade your current pip version run `pip3 install --upgrade pip`.
+- Cython (>= 0.29)
+- GCC or clang C++ compiler with support for C++11 (e.g. _build_essential_ package for some linux distros).
+
+Clone the NetSquid repository and change into the new directory e.g. to clone via HTTPS do
+```
+git clone https://ci.tno.nl/gitlab/QuTech/NetSQUID.git
+cd NetSQUID
+```
+
+To install all of the Python package dependencies run:
+```
+pip3 install --user --extra-index-url https://<username>:<password>@pypi.netsquid.org -r requirements.txt
+```
+substituting the `<username>` and `<password>` fields for your *NetSquid forum login details*.
+To install the package system-wide (for all users) or within a virtual environment remove the `--user` argument.
+Alternatively, if the userame and password are stored in the environment variables `NETSQUIDPYPI_USER` and `NETSQUIDPYPI_PWD`, you can also run
+```
+make requirements
+```
+The `--extra_index-url` is only needed to install the _pydynaa_ library package.
+If you have access to the source repository of _pydynaa_ you can alternatively install it (from source) from there.
+
+If you are installing on MacOS first read the [installing on MacOS section](#installing-from-source-on-macos).
+The recommended way to install NetSquid from the source repository is as an _editable (in-place) package_.
+To do so run the following command:
+```
+make develop
+```
+in the repository root directory (this is equivalent to running `make`).
+This will locally install netsquid by linking to this repository.
+
+If you instead want to install NetSquid as a _independent package_ (not linked to this repository), run the command:
+```
+make install
+```
+which installs the netsquid package. 
+Note: The latter command must be run in the root directory of the repository. However, if the python interpreter is run from the root directory and one imports the `netsquid` package, python will try to import the (unbuilt) netsquid directory that is present in the root directory; likely leading to a *ModuleNotFoundError*. This can be avoided by running the python interpreter from a different directory (not containing an unbuilt netsquid directory) and making sure that the `$PYTHONPATH` variable is not set to the repository root directory by running:
+```
+echo $PYTHONPATH
+```
+This package can later be uninstalled with:
+```
+make uninstall
+```
+Note: Building NetSquid uses multiple threads by default; one less than the number of available cpu cores. 
+This number can be forced by setting the environment variable `NETSQUID_BUILD_CORES`.
+Alternatively one can define the variable for a single run by calling `make install NETSQUID_BUILD_CORES=1`.
+
+If you do not want to install NetSquid as a package, you can build it in-place by running:
+```
+make inplace
+```
+To allow Python to find this in-place build of the _netsquid_ python package, add this repository to your `PYTHONPATH` environment variable.
+For example, in a bash shell do:
+```
+export PYTHONPATH=$PYTHONPATH:/path/to/this/repository
+```
+or add this line to your `$HOME/.bashrc`.
+
+To test NetSquid is working run the commands:
+```
+make unittests
+make inttests
+```
+which will run the unit and integration tests.
+Alternatively, the tests can also be run within Python:
+```python
+import netsquid as ns
+ns.test('unit')
+ns.test('integration')
+```
+
+### Installing from source on MacOS
+
+NetSquid can be installed on MacOS in two ways. 
+
+Using the standard XCode compiler:
+1. Set the `CFLAGS` environment variable to use the correct C++11 libraries:
+```
+export CFLAGS='-mmacosx-version-min=10.7 -std=c++11 -stdlib=libc++'
+```
+2. Follow the Linux installation instructions above.
+
+Using [Homebrew](https://brew.sh/):
+1. Use brew to install gcc: `brew install gcc`.
+2. Update the system `PATH` to include the gcc binary directory.
+3. Set the `CC` and `CXX` environment variables to point to the gcc binary e.g. `export CXX=g++-7`.
+4. Follow the Linux installation instructions above.
+
+Building the documentation
+--------------------------
+
+To build the documentation you need [Sphinx](http://www.sphinx-doc.org/en/master/) (via the python3-sphinx package for some operating systems).
+HTML documentation is built into the directory `/docs/_build/html` by running
+```
+make docs
+```
+in the repository root.
+
+To also update the online docs for the current branch (requires server access) run
+```
+make upload-docs
+```
+
+Building the binary package
+---------------------------
+
+To build the binary [wheel distribution](https://wheel.readthedocs.io/en/stable/) file, run
+```
+make bdist
+```
+in the root directory.
+If the build succeeds a wheel (`.whl` file) is created in the `dist/` directory.
+This is a zip file containing the binary package and documentation.
+
+### Download binary packages
+
+The below links are to binary packages automatically built by the continuous integration pipeline.
+
+Latest master branch:
+- [NetSquid binary package (wheel); Python 3.8; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/master/download?job=bdist:18.04-cp38)
+- [NetSquid binary package (wheel); Python 3.7; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/master/download?job=bdist:18.04-cp37)
+- [NetSquid binary package (wheel); Python 3.6; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/master/download?job=bdist:18.04-cp36)
+
+0-8-stable branch:
+- [NetSquid binary package (wheel); Python 3.8; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/0-8-stable/download?job=bdist:18.04-cp37)
+- [NetSquid binary package (wheel); Python 3.7; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/0-8-stable/download?job=bdist:18.04-cp37)
+- [NetSquid binary package (wheel); Python 3.6; linux 64 bit arch](https://ci.tno.nl/gitlab/QuTech/NetSQUID/builds/artifacts/0-8-stable/download?job=bdist:18.04-cp36)
+
+Deploying the binary package and documentation
+----------------------------------------------
+
+The built binary wheel files and html documentation can be uploaded to the _pypi.netsquid.org_ and _docs.netsquid.org servers, respectively.
+For the binary wheel files only stable versions from the stable branches _X-X-stable_ are intended to be uploaded.
+For the documentation any branch can be uploaded, and will then be available at _docs.netsquid.org/<branch-name>_.
+The location _docs.netsquid.org/latest-release_ links to the latest stable version.
+
+To deploy to the netsquid servers a user account with ssh access is needed.
+The name of this use account should be set in the environment variable `NETSQUIDCI_USER` e.g.
+```
+export NETSQUIDCI_USER=<username>
+```
+or add this line to your `$HOME/.bashrc`.
+
+To deploy a binary wheel for the current stable branch, run:
+```
+make deploy-bdist
+```
+
+To deploy documentation for the current branch, run:
+```
+make deploy-docs
+```

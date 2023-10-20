@@ -1,0 +1,24 @@
+netsquid\.components\.channel
+-----------------------------
+
+Schematic overview of :py:obj:`~netsquid.components.channel.Channel` and its subclasses:
+
+.. image:: ../_static/channels3.png
+    :align: center
+
+
+.. automodule:: netsquid.components.channel
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+..
+    .. autoclass:: Channel
+        :members:
+        :undoc-members:
+        :show-inheritance:
+        :inherited-members:
+
+        .. attribute:: evtype_outputready
+
+        :class:`~pydynaa.core.EventType`: static event type that signals an item is ready for retrieval at channel output.

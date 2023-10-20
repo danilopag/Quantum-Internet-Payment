@@ -1,0 +1,7 @@
+netsquid\.components\.qchannel
+------------------------------
+
+.. automodule:: netsquid.components.qchannel
+    :members:
+    :show-inheritance:
+    :inherited-members:

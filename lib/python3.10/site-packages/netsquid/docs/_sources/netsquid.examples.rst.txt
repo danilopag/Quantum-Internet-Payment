@@ -1,0 +1,16 @@
+netsquid.examples
+=================
+
+Modules containing complete examples for how to use NetSquid.
+
+.. toctree::
+    :caption: Modules
+    :maxdepth: 2
+
+    api_examples/netsquid.examples.teleportation
+    api_examples/netsquid.examples.entanglenodes
+    api_examples/netsquid.examples.purify
+    api_examples/netsquid.examples.repeater
+    api_examples/netsquid.examples.repeater_chain
+    api_examples/netsquid.examples.simple_link
+    api_examples/netsquid.examples.magic_simple_link

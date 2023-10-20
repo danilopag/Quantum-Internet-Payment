@@ -1,0 +1,250 @@
+Contributing
+============
+
+![coverage](https://ci.tno.nl/gitlab/QuTech/NetSQUID/badges/master/coverage.svg) ![pipeline](https://ci.tno.nl/gitlab/QuTech/NetSQUID/badges/master/pipeline.svg)
+
+NetSquid has an end-user software [LICENSE](LICENSE.md) that makes it free for non-commercial use
+but not [open source](https://opensource.org/licenses).
+As a consequence its source code repository is only accessible to its developers i.e. it is not publicly available.
+
+You can still contribute to NetSquid without access to its source repository by creating and sharing NetSquid [snippets](https://netsquid.org/snippets/).
+Snippets are user extension packages for NetSquid intended to provide extra functionality or modeling and generally are licensed as open source.
+
+_The following subsections assume you do have access to the source code repository._
+
+Resources and links
+-------------------
+
+- The NetSquid source code is hosted on a [private Gitlab repository](https://ci.tno.nl/gitlab/QuTech/NetSQUID). 
+- As a developer please use the [Gitlab issues page](https://ci.tno.nl/gitlab/QuTech/NetSQUID/issues) to report bugs or request features.
+- The [NetSquid forum](https://forum.netsquid.org) can be used to check new announcements and discuss new features etc. It replaces the [Basecamp project](https://3.basecamp.com/3328195/projects/9544552), which may still be useful for chatting to developers.
+- Developer notes (e.g. design notes) can be found at the [NetSquid wiki pages](https://ci.tno.nl/gitlab/QuTech/NetSQUID/wikis/home).
+
+Git and GitLab
+--------------
+
+We use the [Gitlab workflow](https://docs.gitlab.com/ee/workflow/gitlab_flow.html).
+The `master` branch contains the latest _working_ development code, and new issue branches (see below) should branch off of _master_.
+By _working_ we mean that the _master_ branch should be passing its tests (also see continuous integration below).
+The _master_ branch is _protected_, meaning that developers must create a merge (pull) request to merge a feature branch into it.
+
+The following branches that have a specific naming patterns (using wildcards) are also protected: `*-stable`, `v*-develop`, and `v*-deploy`.
+- Branches named as `X-Y-stable` are used for stable releases (see below) of a version vX.Y.
+- Branches named as `vX-develop` are used for the development of other major versions, vX, that differ from the major version currently being developed in the master branch.
+- Branches named as `vX-deploy` are used to deploy development builds related to a specific major version, vX.
+
+New code should be developed in a separate branch and then merged into one of the protected branches, usually the master branch.
+Because any new code should address some kind of _issue_, e.g. a new feature or a bug, the name of the branch should refer to an _Issue_ number on the [Gitlab issue tracker](https://ci.tno.nl/gitlab/QuTech/NetSQUID/issues) i.e. the _branch name_ has the format `<issue-number>-<issue-title>`.
+For example, if Alice wants to work on a new feature to refactor qubits, she creates a new _Issue_ on the tracker, assigned the number 12 by Gitlab.
+She creates the branch `12-refactor-qubits` with which she will address this issue -- by using this naming convention Gitlab automatically couples the branch to the Issue.
+Once she is done with this issue she creates a merge request to merge _12-refactor-qubits_ into _master_.
+
+Versioning and releases
+-----------------------
+
+NetSquid uses [semantic versioning](https://semver.org/).
+NetSquid determines the major version using a `MAJOR_VERSION` variable in the _version.py_ module, while minor and patch versions are detmined using the last *version tag* in the git repository.
+For example, if the current commit is tagged with `Version 1.1.2`, then the current commit is considered *stable* and the version of NetSquid is `1.1.2`,
+which can be inspected as follows:
+
+```python
+>>> import netsquid as ns
+>>> ns.__version__
+1.1.2
+```
+
+or by running `python version.py` in the root directory.
+If there are additional commits since the last version tag, then the current commit is a *development version*.
+This is indicated by bumping the minor version by one and appending `.dev{N-1}+{commit hash}`, where N is the number of additional commits.
+For example, if there are 5 commits beyond the tag `Version 1.1.2`, then the version would be `1.2.dev4+a19bbd50` (for some commit hash).
+Special profiling or coverage builds append `.profile` or `.coverage` to the end of the version number.
+
+Each major and minor release should be given its own stable branch named `X-Y-stable`, which is a naming pattern that is setup in Gitlab to be protected.
+These stable branches can be updated by merging in patch commits to the given release.
+Stables branches should always contain *stable versions* i.e. not *development versions*.
+The [Gitlab workflow](https://docs.gitlab.com/ee/workflow/gitlab_flow.html) describes the workflow of updating a release branch e.g. `1-1-stable` for version 1.1:
+
+> The stable branch uses master as a starting point and is created as late as possible. By branching as late as possible you minimize the time you have to apply bug fixes to multiple branches. After a release branch is announced, only serious bug fixes are included in the release branch. If possible these bug fixes are first merged into master and then cherry-picked into the release branch.
+
+To release a new major or minor version, X.Y.0, follow these steps:
+
+1. Identify the correct commit on the master branch, and ensure it passes all CI pipeline tests (eg `make verify`).
+2. Ensure CHANGELOG.md is up to date. Note the target audience is *developers*.
+3. Add an entry for the release to RELEASE.md summarising the major and minor changes. Note the target audience is *users*.
+4. Tag the commit in master with the correct version number e.g. `git tag -a "vX.Y.0" -m "Version X.Y.0"` and push it to origin with `git push origin vX.Y.0`.
+5. Create a stable branch `X-Y-stable`, ensure it matches the commit above, and push it to origin. The CI pipeline automatically creates and uploads the binary distributions and online documentation, and also updates the `docs/latest-release` symbolic link on the server if applicable.
+6. Announce the release by posting the release notes on the NetSquid forum.
+
+To release a patch version, i.e. X.Y.Z for Z > 0, follows steps 1, 2, and 4 above.
+Then merge the tagged commit into the existing `X-Y-stable` branch, and push the result to origin.
+The CI pipeline should do the rest.
+
+Other branches that are deployed by the CI pipeline are `vX-deploy`, which requires that the commit is a development version
+i.e. a stable version will not be deployed to avoid overriding deployed stable packages.
+This branch can be used to share a development version on the python package index when necessary.
+
+GitLab continuous integration
+-----------------------------
+
+This repository makes use of the [GitLab Continuous Integration](https://docs.gitlab.com/ee/ci/) feature to check compilation and run unit/integration/doc tests after a commit to the remote `master` branch.
+This behaviour is specified in the file `.gitlab-ci.yml`.
+
+The CI tests are run on a _runner_ server (at ci.netsquid.org) within a [Docker container](https://hub.docker.com/r/rknegjens/netsquidci/).
+
+Style guide
+-----------
+
+### Language
+
+In both documentation and code naming we use British English, e.g. 'overridden' and not 'overriden' and 'optimise' and not 'optimize'.
+
+We also prefer 'sub-protocol' over 'subprotocol' (same holds for sub-package).
+
+### Documentation
+
+In general documentation like _CHANGELOG.md_ or _RELEASE.md_ we (try to) use the _emphasis style_ when referring to files and modules and use the `code style` when referring to classes, functions, methods or variables. We make this distinction to prevent the rendered text to become 'too red' on GitLab. For functions and methods we also prefer to add brackets, e.g. `method()`, to more easily distinguish them from variable names.
+
+#### Code documentation
+
+We use [NumPy style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard). An example module could look like this:
+
+```python
+"""
+This module shows an example on how to document a module.
+
+Examples
+--------
+
+>>> from somemodule import Foo
+>>> a = Foo()
+>>> a.bar(2)
+3
+
+"""
+__all__ = [
+    "Foo",
+]
+
+
+class Foo():
+    """An example class.
+
+    """
+
+    def add(self, a, b=10.):
+        """The sum of two positive numbers.
+
+        Additional description of the method. Note the blank line before the closing triple quotes.
+
+        Parameters
+        ----------
+        a : float
+            First value to add. At least 0.
+        b : float, optional
+            Second value to add. At least 0. Default 10.
+
+        Returns
+        -------
+        float
+            The sum of the two values.
+
+        Raises
+        ------
+        ValueError
+            If one of the parameters is non-positive.
+
+        Examples
+        --------
+
+        You can add two positive numbers.
+
+        >>> Foo.add(1, 2)
+        3
+
+        Alternatively, when providing one number, it will be added to the default value (10).
+
+        >>> Foo.add(5)
+        15
+
+        """
+        if a < 0 or b < 0:
+            raise ValueError("Both a and b most be positive.")
+        return a + b
+```
+
+Note: for parameter we prefer the following structure:
+
+```
+parameter_name : type(, optional)
+   Description. Constraints. Default value [unit].
+```
+
+Since we use [Sphinx](https://www.sphinx-doc.org/en/master/index.html) to automatically create html documentation pages we use reStructuredText (reST).
+
+#### Referencing
+
+In reST you can make [references](https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html?highlight=attr#cross-referencing-python-objects).
+An example of referencing to a method in the ``Protocol`` class is:
+
+\:py:meth:\`~netsquid.protocols.protocol.Protocol.await_port_output\`
+
+It is good to give a reference to Python objects that are named in paragraphs or section. If a paragraph contains many references or ``quotes`` it can look a bit too busy. In this case objects that occur multiple times can be referred to just by name to make the test more readable.
+
+#### Maths
+
+Mathematical expressions can be written in restructured text using latex: `:math:``(latex code)`` ` e.g. `:math:``\vert 0\rangle`` `.
+When converted to html the expression will be rendered in the browser using mathjax.
+
+#### Modules
+
+A module should start with a short description of the module in a multi-line comment. After the imports, the public API of the module should be enumerated in a `__all__` variable as mentioned in [PEP8](https://pep8.org/#public-and-internal-interfaces), e.g:
+
+```python
+__all__ = [
+    "ExampleClassA",
+    "ExampleClassB",
+    "function_c"
+]
+```
+
+`__all__` specifies what classes will be imported with `from module import *`, which is not recommended in modules, but we use it in __init__.py files for the convenience of the user. For example, instead of having to do `from netsquid.components.qsource import QSource`, a user can use the shorter `from netsquid.components import QSource`. Developers should _always_ use the complete path for imports in modules and tests to prevent using a wrong version of a class or function.
+
+Also, `__all__` specifies classes and/or functions should be included by Sphinx autodocs, and in what order they appear.
+
+#### Doctests
+
+All the documentation is checked for code examples using [doctest](https://docs.python.org/3/library/doctest.html#module-doctest). You can check if the examples pass by calling `make doctests` or `make verify` in a terminal.
+
+A code block is recognized by `>>>` and the code is checked line by line. In _docs/conf.py_ we have changed the `OutputChecker` to ignore checks when a line returns a value but we do not add it to our docstring, e.g.:
+
+```
+>>> 1 + 1
+>>> 2 + 2
+4
+```
+
+This would normally fail since `1 + 1` returns 2. But with our version of the `OutputChecker` this is ignored.
+
+Note that when defining functions or classes in a code example you need to use `...` instead of `>>>` to indicate the continuation of a code block, e.g.:
+
+```
+>>> class Foo():
+...     def bar():
+...         return 42
+```
+
+### Code style
+
+We adhere to [PEP 8](https://pep8.org/) with a few exceptions (e.g. the maximum line width) as marked in the `.flake8` file.
+
+Next to that we prefer to minimise vertical spacing, i.e. no blank line when PEP8 does not require one. Blank lines are required between classes and functions, but within functions we keep it as condensed as possible. To indicate a separate section within a function you could add a single comment line.
+
+To check if your code complies with PEP8 (and Flake8, explained [here](https://blog.sideci.com/about-style-guide-of-python-and-linter-tool-pep8-pyflakes-flake8-haking-pyling-7fdbe163079d) is a “wrapper which verifies pep8, pyflakes and circular complexity"), you can run `make lint` in your terminal.
+
+### Naming
+
+We follow the naming conventions as described by [PEP8](https://pep8.org/#naming-conventions).
+
+Note, a few common pitfalls are that classes should be written `CamelCase` and functions, methods and parameters using `snake_case`.
+
+Within NetSquid we use lower case without underscores for files and directories. Files containing unit tests and integration tests start with `test_` and `testint_`, respectively.

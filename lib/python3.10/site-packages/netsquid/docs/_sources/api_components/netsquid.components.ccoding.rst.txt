@@ -1,0 +1,7 @@
+netsquid\.components\.ccoding
+-----------------------------
+
+.. automodule:: netsquid.components.ccoding
+    :members:
+    :show-inheritance:
+    :inherited-members:

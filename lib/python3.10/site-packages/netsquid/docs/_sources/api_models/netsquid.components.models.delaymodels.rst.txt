@@ -1,0 +1,7 @@
+netsquid\.components\.models\.delaymodels
+-----------------------------------------
+
+.. automodule:: netsquid.components.models.delaymodels
+    :members:
+    :show-inheritance:
+    :inherited-members:

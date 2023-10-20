@@ -1,0 +1,7 @@
+netsquid\.examples\.purify
+--------------------------
+
+.. automodule:: netsquid.examples.purify
+    :members:
+    :show-inheritance:
+    :inherited-members:

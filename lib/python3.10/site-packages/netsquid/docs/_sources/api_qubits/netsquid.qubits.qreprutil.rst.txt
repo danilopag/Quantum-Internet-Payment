@@ -1,0 +1,6 @@
+netsquid\.qubits\.qreprutil
+---------------------------
+
+.. automodule:: netsquid.qubits.qreprutil
+    :members:
+    :show-inheritance:

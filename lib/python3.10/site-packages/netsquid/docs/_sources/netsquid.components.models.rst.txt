@@ -1,0 +1,40 @@
+netsquid\.components\.models
+============================
+
+In NetSquid *models* are used describe the physical behaviour of components in a functional way.
+Models derive from a :py:obj:`~netsquid.components.models.model.Model` base class.
+
+Schematic overview of :py:obj:`~netsquid.components.models.model.Model` and its subclasses:
+
+.. image:: _static/models3.png
+    :align: center
+
+Model can be added to other models with the ``__add__`` operator (+), or multiplied by integers.
+This results in a new Model in the first common parent class that can handle concatenation of models.
+When calling this new model it will call its models consecutively.
+Currently the supported Models for concatenation are :py:obj:`~netsquid.components.models.errormodels.ErrorModel`,
+:py:obj:`~netsquid.components.models.cerrormodels.ClassicalErrorModel`,
+:py:obj:`~netsquid.components.models.qerrormodels.QuantumErrorModel` and
+:py:obj:`~netsquid.components.models.delaymodels.DelayModel`.
+
+For example adding a :py:obj:`~netsquid.components.models.qerrormodels.DephaseNoiseModel` with
+a :py:obj:`~netsquid.components.models.qerrormodels.DepolarNoiseModel` results in a
+:py:obj:`~netsquid.components.models.qerrormodels.QuantumErrorModel`.
+Adding a :py:obj:`~netsquid.components.models.delaymodels.DelayModel` with a
+:py:obj:`~netsquid.components.models.qerrormodels.QuantumErrorModel` is not possible, as the first common superclass
+(:py:obj:`~netsquid.components.models.Model`), does not support concatenating models.
+
+To make your own Models concatenable overwrite :py:meth:`~netsquid.components.models.Model.concatenation_class` and
+return the class your model should concatenate to (can be the same class, or a subclass)
+
+Note that in general :math:`n*(model1 + model2) \neq n*model1 + n*model2` unless ``model1`` and ``model2`` are commutative.
+
+.. toctree::
+    :caption: Modules
+    :maxdepth: 2
+
+    api_models/netsquid.components.models.model
+    api_models/netsquid.components.models.delaymodels
+    api_models/netsquid.components.models.errormodels
+    api_models/netsquid.components.models.qerrormodels
+    api_models/netsquid.components.models.cerrormodels

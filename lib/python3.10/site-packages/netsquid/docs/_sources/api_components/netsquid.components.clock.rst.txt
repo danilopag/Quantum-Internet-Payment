@@ -1,0 +1,7 @@
+netsquid\.components\.clock
+---------------------------
+
+.. automodule:: netsquid.components.clock
+    :members:
+    :show-inheritance:
+    :inherited-members:

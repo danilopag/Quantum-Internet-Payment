@@ -1,0 +1,13 @@
+netsquid\.components\.qmemory
+-----------------------------
+
+Schematic overview of the :py:obj:`~netsquid.components.qmemory.QuantumMemory` component:
+
+.. image:: ../_static/QuantumMemorySchematic(box).png
+    :align: center
+    :width: 500px
+
+.. automodule:: netsquid.components.qmemory
+    :members:
+    :show-inheritance:
+    :inherited-members:

@@ -1,0 +1,35 @@
+links:
+- fidelity: 1.0
+  name: ch0
+  node_name1: client
+  node_name2: ttp
+  noise_type: Bitflip
+- fidelity: 1.0
+  name: ch1
+  node_name1: client
+  node_name2: merchant
+  noise_type: Bitflip
+- fidelity: 1.0
+  name: ch2
+  node_name1: merchant
+  node_name2: ttp
+  noise_type: Bitflip
+nodes:
+- gate_fidelity: 1.0
+  name: client
+  qubits:
+  - id: 0
+    t1: 0
+    t2: 0
+- gate_fidelity: 1.0
+  name: ttp
+  qubits:
+  - id: 0
+    t1: 0
+    t2: 0
+- gate_fidelity: 1.0
+  name: merchant
+  qubits:
+  - id: 0
+    t1: 0
+    t2: 0

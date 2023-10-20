@@ -1,0 +1,6 @@
+netsquid\.qubits\.sparseutil
+----------------------------
+
+.. automodule:: netsquid.qubits.sparseutil
+    :members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+netsquid\.components\models\.qerrormodels
+-----------------------------------------
+
+.. automodule:: netsquid.components.models.qerrormodels
+    :members:
+    :show-inheritance:
+    :inherited-members:

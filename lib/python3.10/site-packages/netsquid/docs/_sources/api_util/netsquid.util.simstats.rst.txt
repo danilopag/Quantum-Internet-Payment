@@ -1,0 +1,6 @@
+netsquid\.util\.simstats
+------------------------
+
+.. automodule:: netsquid.util.simstats
+    :members:
+    :show-inheritance:

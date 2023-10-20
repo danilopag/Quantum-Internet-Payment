@@ -1,0 +1,51 @@
+NetSquid
+========
+
+Welcome to the documentation pages for **NetSquid**, the **Net**\work **S**\imulator for **Qu**\antum **I**\nformation using **D**\iscrete events.
+The key features of NetSquid include:
+
+- The use of a discrete event simulator to simulate delays in transmission and computation.
+- Extendable libraries of network components and protocols.
+- Multiple qubit *quantum state formalisms* available: trade offs include versatility, speed, and memory efficiency.
+- A Python 3 package that uses Numpy/SciPy, Cython, and C++ under the hood.
+
+Please check you are reading the documentation that matches your version of NetSquid.
+Other versions can be selected with the menu at the bottom of the navigation panel.
+
+.. toctree::
+    :caption: About
+    :maxdepth: 1
+
+    Introduction<README>
+    Installation<INSTALL>
+    Release notes<RELEASE>
+    Authors<AUTHORS>
+    License<LICENSE>
+
+For a brief introduction to NetSquid see this `QIA NetSquid presentation <https://docs.netsquid.org/talks/QIA-lisbon_NetSquid_rob_2019-5-14_v1.pdf>`_.
+
+Join the `NetSquid forum <https://forum.netsquid.org>`_ to follow the latest announcements, report issues, and discuss with developers.
+
+.. toctree::
+   :caption: Learn NetSquid
+   :maxdepth: 3
+   :titlesonly:
+
+   quick_start
+   tutorial.intro
+   learn.examples
+
+.. toctree::
+    :caption: API Reference
+    :maxdepth: 2
+
+    api_reference
+    api_pydynaa
+
+.. toctree::
+    :caption: For developers
+    :maxdepth: 1
+
+    Installation from source<INSTALL-SOURCE>
+    Contributing<CONTRIBUTING>
+    Changelog<CHANGELOG>

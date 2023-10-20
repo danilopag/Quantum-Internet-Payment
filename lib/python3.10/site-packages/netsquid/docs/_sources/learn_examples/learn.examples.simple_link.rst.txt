@@ -1,0 +1,5 @@
+A simple link layer protocol
+============================
+
+.. automodule:: netsquid.examples.simple_link
+   :noindex:

@@ -1,0 +1,8 @@
+netsquid\.examples\.simple_link
+-------------------------------
+
+.. automodule:: netsquid.examples.simple_link
+    :members:
+    :show-inheritance:
+    :inherited-members:
+    :noindex:

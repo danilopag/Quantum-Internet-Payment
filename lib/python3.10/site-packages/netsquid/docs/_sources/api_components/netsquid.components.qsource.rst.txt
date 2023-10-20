@@ -1,0 +1,13 @@
+netsquid\.components\.qsource
+-----------------------------
+
+Schematic overview of the :py:obj:`~netsquid.components.qsource.QSource` component:
+
+.. image:: ../_static/QSourceSchematic.png
+    :align: center
+    :width: 500px
+
+.. automodule:: netsquid.components.qsource
+    :members:
+    :show-inheritance:
+    :inherited-members:
